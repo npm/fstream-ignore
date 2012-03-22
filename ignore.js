@@ -97,7 +97,7 @@ IgnoreReader.prototype.addIgnoreFile = function (e) {
     // perhaps aborted.  do nothing.
     if (i === 0 || e._aborted) return
     var rules = this.readRules(buf, e)
-    this.addIgnoreRules(rules)
+    this.addIgnoreRules(rules, e)
   }.bind(this)
   e.on("end", onend)
 
@@ -113,7 +113,7 @@ IgnoreReader.prototype.readRules = function (buf, entry) {
 }
 
 
-IgnoreReader.prototype.addIgnoreRules = function (set) {
+IgnoreReader.prototype.addIgnoreRules = function (set, e) {
   // filter out anything obvious
   set = set.filter(function (s) {
     s = s.trim()
@@ -182,8 +182,6 @@ IgnoreReader.prototype.applyIgnores = function (entry) {
     var match = rule.match(test) || rule.match(test.substr(1))
     if (match) {
       entry.excluded = !rule.negate
-      // console.error(entry.path.substr(entry.root.path.length),
-      //               rule.pattern, rule.negate, entry.excluded)
     }
   })
 }
