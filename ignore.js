@@ -127,7 +127,9 @@ IgnoreReader.prototype.addIgnoreRules = function (set, e) {
   // Note that we need to allow dot files by default, and
   // not switch the meaning of their exclusion, so they're
   var mm = set.map(function (s) {
-    return new Minimatch(s, { matchBase: true, dot: true, flipNegate: true })
+    var m = new Minimatch(s, { matchBase: true, dot: true, flipNegate: true })
+    m.ignoreFile = e.basename
+    return m
   })
 
   if (!this.ignoreRules) this.ignoreRules = []
