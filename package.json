@@ -1,13 +1,13 @@
 {
   "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)",
-  "name": "ignorefile",
+  "name": "fstream-ignore",
   "description": "A thing for ignoring files based on globs",
   "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/isaacs/ignorefile.git"
+    "url": "git://github.com/isaacs/fstream-ignore.git"
   },
-  "main": "ignorefile.js",
+  "main": "ignore.js",
   "scripts": {
     "test": "tap test"
   },
