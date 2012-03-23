@@ -9,7 +9,7 @@
   },
   "main": "ignore.js",
   "scripts": {
-    "test": "tap test"
+    "test": "tap test/*.js"
   },
   "dependencies": {
     "minimatch": "~0.2.0",
@@ -17,6 +17,8 @@
     "inherits": "~1.0.0"
   },
   "devDependencies": {
-    "tap": ""
+    "tap": "",
+    "rimraf": "",
+    "mkdirp": ""
   }
 }
