@@ -31,18 +31,15 @@ function IgnoreReader (props) {
 
   this.ignoreRules = null
 
-  // get the set of ancestors that have ignore rules.
-  // we unshift so that they'll be in the right order
-  // to be iterated over from 0->length later.
-  this.ancestorIgnores = []
-  for (var p = this.parent; p; p = p.parent) {
-    if (p.ignoreRules) this.ancestorIgnores.unshift(p)
-  }
-  // then, push this one in, so that it's the highest precedence
-  this.ancestorIgnores.push(this)
+  // XXX
+  // Existing filters are not handled properly.
+  // this results in files being missed if they're re-included
+  // if (props.filter &&
+  //     (!this.parent || props.filter !== this.parent.filter)) {
+  //   this._filter = props.filter
+  // }
 
-  if (props.filter) this._filter = props.filter
-  props.filter = this.filter.bind(this)
+  props.filter = this.filter = this.filter.bind(this)
 
   // ensure that .ignore files always show up at the top of the list
   // that way, they can be read before proceeding to handle other
@@ -52,6 +49,8 @@ function IgnoreReader (props) {
   }
   props.sort = this.sort.bind(this)
 
+  // XXX This needs to be detected much earlier, in the
+  // addEntries method.
   this.on("entry", function (e) {
     // if this is an ignore file, then process it for rules
     var isIg = this.ignoreFiles.indexOf(e.basename) !== -1
@@ -94,6 +93,7 @@ IgnoreReader.prototype.addIgnoreFile = function (e) {
   }
 
   var onend = function onend () {
+    console.error("end", e.path, e._aborted)
     // perhaps aborted.  do nothing.
     if (i === 0 || e._aborted) return
     var rules = this.readRules(buf, e)
@@ -123,6 +123,8 @@ IgnoreReader.prototype.addIgnoreRules = function (set, e) {
   // no rules to add!
   if (!set.length) return
 
+  console.error("addIgnoreRules", e.path, set)
+
   // now get a minimatch object for each one of these.
   // Note that we need to allow dot files by default, and
   // not switch the meaning of their exclusion, so they're
@@ -138,15 +140,60 @@ IgnoreReader.prototype.addIgnoreRules = function (set, e) {
 
 
 IgnoreReader.prototype.filter = function (entry) {
-  this.applyIgnores(entry)
-  if (entry.excluded) return false
-  return this._filter ? this._filter.apply(entry, arguments) : true
 
+  var d = entry.basename === ".cba" ? function () {
+    var p = this.path.substr(this.root.path.length)
+    var args = [p, entry.path.substr(this.path.length)].concat([].slice.call(arguments))
+    console.error.apply(console, args)
+  }.bind(this) : function () {}
+
+  d("FILTER: apply ignores")
+  this.applyIgnores(entry)
+  // if (!entry.excluded && this._filter) {
+  //   d("Has a _filter")
+  //   entry.excluded = !this._filter.apply(entry, arguments)
+  //   d("applied _filter, excluded=", entry.excluded)
+  // }
+
+  // if it's an ignore file, we may not be in a mood to
+  // include it, but its rules still have an effect, even
+  // if it's been excluded.
+  if (entry.excluded &&
+      -1 !== this.ignoreFiles.indexOf(entry.basename)) {
+    this.pause()
+    this.disown(entry)
+
+    this.emit("ignoreFile", entry)
+    if (!entry._aborted)
+      this.addIgnoreFile(entry)
+
+    entry.on("close", function () {
+      console.error("resuming", this.path, this.ignoreRules.map(function (m) {
+        return (m.negate ? "!" : "") + m.pattern
+      }))
+      this.resume()
+    }.bind(this))
+    entry.on("data", function (c) {
+      console.error("disowned data >" + c)
+    })
+
+    console.error("resuming entry")
+    entry.resume()
+  }
+
+  return !entry.excluded
 }
 
 
 // sets an "excluded" flag on the entry if it's excluded.
 IgnoreReader.prototype.applyIgnores = function (entry) {
+
+  var d = entry.basename === ".cba" ? function () {
+    var p = this.path.substr(this.root.path.length)
+    var args = [p, entry.path.substr(this.path.length)].concat([].slice.call(arguments))
+    console.error.apply(console, args)
+  }.bind(this) : function () {}
+
   // walk back up the family tree.
   // At each level, test the entry against all the rules
   // at that level, as if it was rooted there.
@@ -168,24 +215,73 @@ IgnoreReader.prototype.applyIgnores = function (entry) {
   // to set the "negate" for our information, but still report
   // whether the core pattern was a hit or a miss.
 
+  d("START")
   if (this.parent) this.parent.applyIgnores(entry)
-  if (!this.ignoreRules) return
+  d("asked parents")
+  if (!this.ignoreRules) {
+    d("  no rules")
+    return
+  }
 
   var test = entry.path.substr(this.path.length)
-  // console.error("rules", this.ignoreRules.map(function (rule) {
+  d("TEST", test, this.ignoreRules.map(function (rule) {
+    return (rule.negate ? "!" : "") + rule.pattern
+  }))
+
+
+  // d("rules", this.ignoreRules.map(function (rule) {
   //   return (rule.negate ? "!" : "") + rule.pattern
   // }))
+
+  // d("apply ignores "+ test)
 
   this.ignoreRules.forEach(function (rule) {
     // negation means inclusion
     if (rule.negate && !entry.excluded ||
-        !rule.negate && entry.excluded) return
+        !rule.negate && entry.excluded) {
+      d("  unnecessary", rule.pattern)
+      return
+    }
 
-    var match = rule.match(test) || rule.match(test.substr(1))
+    // first, match against /foo/bar
+    var match = rule.match(test)
+
+    if (!match) {
+      // try with the leading / trimmed off the test
+      // eg: foo/bar instead of /foo/bar
+      match = rule.match(test.substr(1))
+    }
+
+    d("  filematch", match, rule.pattern)
+
+    // if the entry is a directory, then it will match
+    // with a trailing slash. eg: /foo/bar/ or foo/bar/
+    if (!match && entry.type === "Directory") {
+      match = rule.match(test + "/")
+      if (!match) {
+        match = rule.match(test.substr(1) + "/")
+      }
+
+      // When including a file with a negated rule, it's
+      // relevant if a directory partially matches, since
+      // it may then match a file within it.
+      // Eg, if you ignore /a, but !/a/b/c
+      if (!match && rule.negate) {
+        match = rule.match(test, true) ||
+                rule.match(test.substr(1), true) ||
+                rule.match(test + "/", true) ||
+                rule.match(test.substr(1) + "/", true)
+      }
+      d("  dirmatch ", match, rule.pattern)
+    }
+
     if (match) {
       entry.excluded = !rule.negate
+      d("  MATCH! excluded =", entry.excluded, rule.pattern)
+      //d("HIT", rule.negate, this.path, rule.pattern, entry.path.substr(this.path.length), this.ignoreRules.map(function (r) { return r.pattern }))
     }
-  })
+  }, this)
+  d("FINISH", entry.excluded)
 }
 
 
