@@ -37,8 +37,8 @@ function IgnoreReader (props) {
   // entries in that same folder
   if (props.sort) {
     this._sort = props.sort === "alpha" ? alphasort : props.sort
+    props.sort = null
   }
-  props.sort = this.sort.bind(this)
 
   this.on("entries", function (entries) {
     // if there are any ignore files in the list, then
