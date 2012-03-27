@@ -56,7 +56,7 @@ function IgnoreReader (props) {
   // however, directories have to be re-tested against
   // rules with a "/" appended, because "a/b/" will only
   // match if "a/b" is a dir, and not otherwise.
-  this.on("entryStat", function (entry, props) {
+  this.on("_entryStat", function (entry, props) {
     var t = entry.basename
     if (!this.applyIgnores(entry.basename,
                            entry.type === "Directory",
@@ -183,7 +183,7 @@ IgnoreReader.prototype.filterEntries = function () {
 }
 
 
-IgnoreReader.prototype.applyIgnores = function (entry, partial) {
+IgnoreReader.prototype.applyIgnores = function (entry, partial, obj) {
   var included = true
 
   // this = /a/b/c
