@@ -58,7 +58,9 @@ function IgnoreReader (props) {
   // match if "a/b" is a dir, and not otherwise.
   this.on("entryStat", function (entry, props) {
     var t = entry.basename
-    if (!this.applyIgnores(entry.basename, entry.type === "Directory")) {
+    if (!this.applyIgnores(entry.basename,
+                           entry.type === "Directory",
+                           entry)) {
       entry.abort()
     }
   }.bind(this))
@@ -68,10 +70,20 @@ function IgnoreReader (props) {
 
 
 IgnoreReader.prototype.addIgnoreFiles = function () {
-  this.pause()
+  if (this._paused) {
+    this.once("resume", this.addIgnoreFiles)
+    return
+  }
+  if (this._ignoreFilesAdded) return
+  this._ignoreFilesAdded = true
+
   var newIg = this.entries.filter(this.isIgnoreFile, this)
   , count = newIg.length
   , errState = null
+
+  if (!count) return
+
+  this.pause()
 
   var then = function then (er) {
     if (errState) return
