@@ -59,7 +59,6 @@ function IgnoreReader (props) {
   this.on("entryStat", function (entry, props) {
     var t = entry.basename
     if (!this.applyIgnores(entry.basename, entry.type === "Directory")) {
-      console.error("failed at entryStat test")
       entry.abort()
     }
   }.bind(this))
@@ -224,23 +223,15 @@ IgnoreReader.prototype.applyIgnores = function (entry, partial) {
     // it may then match a file within it.
     // Eg, if you ignore /a, but !/a/b/c
     if (!match && rule.negate && partial) {
-      console.error("possible partial dir include", "!" + rule.pattern, entry)
       match = rule.match("/" + entry, true) ||
               rule.match(entry, true)
-      if (match) {
-        console.error("  partial hit")
-      }
     }
 
     if (match) {
       included = rule.negate
-      console.error("  hit", included)
-    } else {
-      console.error("no hit", entry, (rule.negate ? "!" : "") + rule.pattern)
     }
   }, this)
 
-  console.error("included?", entry, included)
   return included
 }
 
