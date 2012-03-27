@@ -2,7 +2,7 @@
   "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)",
   "name": "fstream-ignore",
   "description": "A thing for ignoring files based on globs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "repository": {
     "type": "git",
     "url": "git://github.com/isaacs/fstream-ignore.git"
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "minimatch": "~0.2.0",
-    "fstream": "~0.1.15",
+    "fstream": "~0.1.17",
     "inherits": "~1.0.0"
   },
   "devDependencies": {
