@@ -40,16 +40,16 @@ function IgnoreReader (props) {
     props.sort = null
   }
 
-  this.on("entries", function (entries) {
+  this.on("entries", function () {
     // if there are any ignore files in the list, then
     // pause and add them.
     // then, filter the list based on our ignoreRules
 
-    var hasIg = entries.some(this.isIgnoreFile, this)
+    var hasIg = this.entries.some(this.isIgnoreFile, this)
 
-    if (!hasIg) return this.filterEntries(entries)
+    if (!hasIg) return this.filterEntries()
 
-    this.addIgnoreFiles(entries)
+    this.addIgnoreFiles()
   })
 
   // we filter entries before we know what they are.
@@ -67,9 +67,9 @@ function IgnoreReader (props) {
 }
 
 
-IgnoreReader.prototype.addIgnoreFiles = function (entries) {
+IgnoreReader.prototype.addIgnoreFiles = function () {
   this.pause()
-  var newIg = entries.filter(this.isIgnoreFile, this)
+  var newIg = this.entries.filter(this.isIgnoreFile, this)
   , count = newIg.length
   , errState = null
 
@@ -77,7 +77,7 @@ IgnoreReader.prototype.addIgnoreFiles = function (entries) {
     if (errState) return
     if (er) return this.emit("error", errState = er)
     if (-- count === 0) {
-      this.filterEntries(entries)
+      this.filterEntries()
       this.resume()
     }
   }.bind(this)
@@ -131,7 +131,7 @@ IgnoreReader.prototype.readRules = function (buf, e) {
 
 // Override this to do fancier things, like read the
 // "files" array from a package.json file or something.
-IgnoreReader.prototype.addIgnoreRules = function (set, e, entries) {
+IgnoreReader.prototype.addIgnoreRules = function (set, e) {
   // filter out anything obvious
   set = set.filter(function (s) {
     s = s.trim()
@@ -156,10 +156,15 @@ IgnoreReader.prototype.addIgnoreRules = function (set, e, entries) {
 }
 
 
-IgnoreReader.prototype.filterEntries = function (entries) {
-  // for each entry, apply each parent's ignore rules against it
-  // and then this one's.  Then, if it's not valid, exclude it.
-  this.entries = entries.filter(function (entry) {
+IgnoreReader.prototype.filterEntries = function () {
+  // this exclusion is at the point where we know the list of
+  // entries in the dir, but don't know what they are.  since
+  // some of them *might* be directories, we have to run the
+  // match in dir-mode as well, so that we'll pick up partials
+  // of files that will be included later.  Anything included
+  // at this point will be checked again later once we know
+  // what it is.
+  this.entries = this.entries.filter(function (entry) {
     // at this point, we don't know if it's a dir or not.
     return this.applyIgnores(entry) || this.applyIgnores(entry, true)
   }, this)
