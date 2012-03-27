@@ -177,7 +177,7 @@ IgnoreReader.prototype.applyIgnores = function (entry, partial) {
   // this = /a/b/c
   // entry = d
   // parent /a/b sees c/d
-  if (this.parent && this.parent.applyIgnores && this.parent.path !== this.path) {
+  if (this.parent && this.parent.applyIgnores) {
     var pt = this.basename + "/" + entry
     included = this.parent.applyIgnores(pt, partial)
   }
