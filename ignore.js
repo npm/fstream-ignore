@@ -21,7 +21,7 @@ function IgnoreReader (props) {
 
   // must be a Directory type
   if (typeof props === "string") {
-    props = { path: props }
+    props = { path: path.resolve(props) }
   }
 
   props.type = "Directory"
