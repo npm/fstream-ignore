@@ -20,5 +20,6 @@
     "tap": "",
     "rimraf": "",
     "mkdirp": ""
-  }
+  },
+  "license": "BSD"
 }
