@@ -12,7 +12,7 @@
     "test": "tap test/*.js"
   },
   "dependencies": {
-    "fstream": "~0.1.17",
+    "fstream": "^1.0.0",
     "inherits": "2",
     "minimatch": "^1.0.0"
   },
