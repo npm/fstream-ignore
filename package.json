@@ -14,7 +14,7 @@
   "dependencies": {
     "fstream": "^1.0.0",
     "inherits": "2",
-    "minimatch": "^1.0.0"
+    "minimatch": "^2.0.1"
   },
   "devDependencies": {
     "tap": "",
