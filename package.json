@@ -17,9 +17,9 @@
     "minimatch": "^2.0.1"
   },
   "devDependencies": {
-    "tap": "",
+    "mkdirp": "",
     "rimraf": "",
-    "mkdirp": ""
+    "tap": "^1.2.0"
   },
   "license": "ISC"
 }
