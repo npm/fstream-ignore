@@ -1,5 +1,6 @@
 var IgnoreFile = require("../")
 , fs = require('fs')
+, path = require('path')
 
 // set the ignores just for this test
 var c = require("./common.js")
@@ -11,7 +12,8 @@ var expected =
   [ "/a"
   , "/a/b"
   , "/a/b/c"
-  , "/a/b/c/abc" ]
+  , "/a/b/c/abc"
+  ].map(path.normalize)
 
 var originalReadFile = fs.readFile
 , parallelCount = 0

@@ -1,5 +1,6 @@
 // ignore most things
 var IgnoreFile = require("../")
+, path = require('path')
 
 // set the ignores just for this test
 var c = require("./common.js")
@@ -14,7 +15,8 @@ var expected =
   , "/c/b/a/cba"
   , "/c"
   , "/c/b"
-  , "/c/b/a" ]
+  , "/c/b/a"
+  ].map(path.normalize)
 
 require("tap").test("basic ignore rules", function (t) {
   t.pass("start")
