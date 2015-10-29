@@ -14,12 +14,12 @@
   "dependencies": {
     "fstream": "^1.0.0",
     "inherits": "2",
-    "minimatch": "^2.0.1"
+    "minimatch": "^3.0.0"
   },
   "devDependencies": {
     "mkdirp": "",
     "rimraf": "",
-    "tap": "^1.2.0"
+    "tap": "^2.2.0"
   },
   "license": "ISC"
 }
