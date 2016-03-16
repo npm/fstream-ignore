@@ -2,12 +2,13 @@ var IgnoreFile = require("../")
 
 // set the ignores just for this test
 var c = require("./common.js")
-c.ignores({ "a/.basic-ignore": ["b/", "aca"] })
+c.ignores({ "a/.basic-ignore": ["b/", "aca", './c'] })
 
 // the files that we expect to not see
 var notAllowed =
   [ /^\/a\/b\/.*/
-  , /^\/a\/.*\/aca$/ ]
+  , /^\/a\/.*\/aca$/
+  , /^\/a\/c.*/ ]
 
 
 require("tap").test("basic ignore rules", function (t) {

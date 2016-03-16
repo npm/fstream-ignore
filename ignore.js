@@ -158,6 +158,8 @@ IgnoreReader.prototype.addIgnoreRules = function (set, e) {
   // not switch the meaning of their exclusion
   var mmopt = { matchBase: true, dot: true, flipNegate: true }
   , mm = set.map(function (s) {
+    // ./ should be equivalent to /, as in .gitignore
+    s = s.replace(/^\.([\\/])/, '$1')
     var m = new Minimatch(s, mmopt)
     m.ignoreFile = e
     return m
