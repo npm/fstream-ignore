@@ -1,1 +1,4 @@
 test/fixtures
+.nyc_output/
+coverage/
+node_modules/

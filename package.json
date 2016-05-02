@@ -9,7 +9,7 @@
   },
   "main": "ignore.js",
   "scripts": {
-    "test": "tap test/*.js"
+    "test": "tap test/*.js --cov"
   },
   "dependencies": {
     "fstream": "^1.0.0",
@@ -19,7 +19,7 @@
   "devDependencies": {
     "mkdirp": "",
     "rimraf": "",
-    "tap": "^2.2.0"
+    "tap": "^5.7.1"
   },
   "license": "ISC"
 }
